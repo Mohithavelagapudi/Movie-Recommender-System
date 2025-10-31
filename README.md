@@ -16,6 +16,10 @@ We minimize **Root Mean Squared Error (RMSE)** across observed ratings and compa
 - 📉 **Closed-form SVD**
 - ⚙️ **Iterative Optimization** (Gradient Descent, Alternating Least Squares)
 
+<p align="center">
+  <img src="image (25).png" alt="Matrix factorization" width="1000"/>
+</p>
+
 > ✨ This work emphasizes both **mathematical rigor** (orthogonality, rank reduction, spectral energy) and **practical considerations** in evaluation and deployment.
 
 ---
@@ -60,8 +64,8 @@ where
 
 - **U** ∈ ℝ<sup>m×m</sup>: Orthonormal user singular vectors  
 - **Σ** ∈ ℝ<sup>m×n</sup>: Diagonal matrix of singular values σ₁ ≥ σ₂ ≥ … ≥ σᵣ  
-- **V** ∈ ℝ<sup>n×n</sup>: Orthonormal item singular vectors  
-
+- **V** ∈ ℝ<sup>n×n</sup>: Orthonormal item singular vectors
+  
 ---
 
 ### 🔹 **Truncated (Rank-k) Approximation**
@@ -110,6 +114,10 @@ The predicted rating for user \( u \) and item \( i \) is:
 $$
 \hat{R}_{u,i} = P_{u,:} \cdot Q_{:,i}
 $$
+
+<p align="center">
+  <img src="image (24).png" alt="Matrix factorization" width="1000"/>
+</p>
 
 ---
 
