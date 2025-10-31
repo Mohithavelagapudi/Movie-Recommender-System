@@ -38,99 +38,117 @@ Learn **latent representations** capturing intrinsic taste dimensions through **
 
 ## 🧮 **3. Mathematical Foundations**
 
-Let  
+Let the **user–item rating matrix** be:
 
-\[
+$$
 R \in \mathbb{R}^{m \times n}
-\]  
+$$
 
-represent the **user–item rating matrix**, where missing entries are unobserved.
+where missing entries are unobserved.
 
 ---
-
 ### 🧱 **Full Singular Value Decomposition (SVD)**
 
-\[
-R = U \, \Sigma \, V^{\top}
-\]
+The full SVD factorizes the rating matrix as:
 
-Where:
+$$
+R = U \Sigma V^{\top}
+$$
 
-- \( U \in \mathbb{R}^{m \times m} \): Orthonormal **user singular vectors**  
-- \( \Sigma \in \mathbb{R}^{m \times n} \): Diagonal matrix of **singular values** \( \sigma_1 \geq \sigma_2 \geq ... \geq \sigma_r \)  
-- \( V \in \mathbb{R}^{n \times n} \): Orthonormal **item singular vectors**
+where  
+
+
+- **U** ∈ ℝ<sup>m×m</sup>: Orthonormal user singular vectors  
+- **Σ** ∈ ℝ<sup>m×n</sup>: Diagonal matrix of singular values σ₁ ≥ σ₂ ≥ … ≥ σᵣ  
+- **V** ∈ ℝ<sup>n×n</sup>: Orthonormal item singular vectors  
 
 ---
 
 ### 🔹 **Truncated (Rank-k) Approximation**
 
-\[
-R_k = U_k \, \Sigma_k \, V_k^{\top} = \underset{\text{rank}(X)=k}{\operatorname{argmin}} \| R - X \|_F
-\]
+To reduce dimensionality, we keep only the top **k singular values**:
 
-Only the **top-k singular values** are retained to reduce dimensionality.
+$$
+R_k = U_k \Sigma_k V_k^{T}
+$$
 
-#### 🧾 **Energy Retention**
+The rank-k approximation minimizes the Frobenius norm error:
 
-\[
-\text{Energy}(k) = \frac{\sum_{i=1}^{k} \sigma_i^2}{\sum_{i=1}^{r} \sigma_i^2}
-\]
+$$
+|| R - R_k ||_F = \min_{rank(X)=k} || R - X ||_F
+$$
 
-> This ensures that we capture the most informative components of user–item interactions.
+---
+
+### 🧾 **Energy Retention**
+
+Energy retained after truncation is given by:
+
+$$
+\text{Energy}(k) = 
+\frac{\sum_{i=1}^{k} \sigma_i^2}
+{\sum_{i=1}^{r} \sigma_i^2}
+$$
+
+> This quantifies how much of the total variance (spectral energy) is preserved in the top-k components.
 
 ---
 
 ### 💡 **Latent Feature Representation**
 
-\[
-P = U_k \, \Sigma_k^{1/2} \quad \text{(User feature matrix)}
-\]  
-\[
-Q = \Sigma_k^{1/2} \, V_k^{\top} \quad \text{(Item feature matrix)}
-\]
+Latent user and item features are constructed as:
 
-Predicted rating for user \( u \) and item \( i \):
+$$
+\begin{aligned}
+P &= U_k \Sigma_k^{1/2} \quad \text{(User feature matrix)} \\
+Q &= \Sigma_k^{1/2} V_k^{\top} \quad \text{(Item feature matrix)}
+\end{aligned}
+$$
 
-\[
+The predicted rating for user \( u \) and item \( i \) is:
+
+$$
 \hat{R}_{u,i} = P_{u,:} \cdot Q_{:,i}
-\]
+$$
 
 ---
 
 ## 🔁 **4. Alternative Optimization (Implicit Factorization)**
 
-Instead of computing SVD directly, we can **learn the latent factors** by minimizing reconstruction loss:
+Instead of direct SVD, latent vectors can be learned by minimizing the reconstruction loss:
 
-\[
-L = \sum_{(u,i)\in\Omega} (R_{u,i} - p_u \cdot q_i)^2 + \lambda (\|p_u\|^2 + \|q_i\|^2)
-\]
+$$
+L = 
+\sum_{(u,i)\in\Omega} (R_{u,i} - p_u \cdot q_i)^2 
++ \lambda (||p_u||^2 + ||q_i||^2)
+$$
 
 where:
-- \( \Omega \): Set of observed ratings  
-- \( \lambda \): Regularization parameter  
+- Ω = set of observed user–item pairs  
+- λ = regularization parameter  
 
 ---
 
 ### ⚙️ **Gradient Descent Updates**
 
-\[
-p_u \leftarrow p_u + \eta (e_{u,i} q_i - \lambda p_u)
-\]  
-\[
-q_i \leftarrow q_i + \eta (e_{u,i} p_u - \lambda q_i)
-\]  
+$$
+\begin{aligned}
+p_u &\leftarrow p_u + \eta (e_{u,i} q_i - \lambda p_u) \\
+q_i &\leftarrow q_i + \eta (e_{u,i} p_u - \lambda q_i)
+\end{aligned}
+$$
 
-where:
+with error term:
 
-\[
+$$
 e_{u,i} = R_{u,i} - p_u \cdot q_i
-\]
+$$
 
 ---
 
 ### 🔄 **Alternating Least Squares (ALS)**
 
-For fixed \( Q \), optimize each \( p_u \) via **ridge regression**, then alternate:
+For fixed item matrix \( Q \), optimize user factors \( P \) via **ridge regression**, and vice versa:
 
 1. Fix \( Q \), solve for \( P \)  
 2. Fix \( P \), solve for \( Q \)  
@@ -141,30 +159,23 @@ Repeat until convergence.
 
 ## 🧪 **5. Evaluation Metric**
 
-Model performance is assessed using **Root Mean Squared Error (RMSE):**
+Model performance is measured using **Root Mean Squared Error (RMSE):**
 
-\[
-\text{RMSE} = \sqrt{ \frac{1}{|\Omega|} \sum_{(u,i)\in\Omega} (R_{u,i} - \hat{R}_{u,i})^2 }
-\]
+$$
+\text{RMSE} = 
+\sqrt{
+\frac{1}{|\Omega|}
+\sum_{(u,i)\in\Omega}
+\left( R_{u,i} - \hat{R}_{u,i} \right)^2
+}
+$$
 
 ---
-
-## 🧰 **6. How to Run**
-
-### 📂 **Setup**
-
-1. **Acquire Dataset** (e.g., [MovieLens 100K](https://grouplens.org/datasets/movielens/100k/))  
-2. Place the file `ratings.csv` in the project root directory.
-
-### 🛠️ **Install Dependencies**
-
-```bash
-pip install numpy pandas scipy scikit-learn
-```
-## 🧭 **7. Key Insights**
+## 🧭 **6. Key Insights**
 
 | 💡 **Concept** | 🧮 **Description** |
 |----------------|--------------------|
-| **Orthogonality** | Ensures that latent features (columns of \( U \) and \( V \)) are **orthogonal**, meaning \( U^{\top}U = I \) and \( V^{\top}V = I \). This guarantees that each latent dimension captures unique, uncorrelated information. |
-| **Rank Reduction** | By using a **truncated rank-k approximation** \( R_k = U_k \Sigma_k V_k^{\top} \), the model retains only the most significant singular values—reducing noise and preventing overfitting. |
-| **Spectral Energy Concentration** | Measures how much of the total variance (energy) is captured by the top-k components:  \[ \text{Energy}(k) = \frac{\sum_{i=1}^{k} \sigma_i^2}{\sum_{i=1}^{r} \sigma_i^2} \]  Higher energy retention indicates stronger representation of dominant behavioral patterns. |
+| **Orthogonality** | Ensures that latent features (columns of **U** and **V**) are **orthogonal**, meaning **UᵀU = I** and **VᵀV = I**. This guarantees that each latent dimension captures unique, uncorrelated information. |
+| **Rank Reduction** | By using a **truncated rank-k approximation** **Rₖ = UₖΣₖVₖᵀ**, the model retains only the most significant singular values—reducing noise and preventing overfitting. |
+| **Spectral Energy Concentration** | Measures how much of the total variance (energy) is captured by the top-k components:<br><br> $$ Energy(k) = \frac{\sum_{i=1}^{k} \sigma_i^2}{\sum_{i=1}^{r} \sigma_i^2} $$ <br>Higher energy retention indicates stronger representation of dominant behavioral patterns. |
+
